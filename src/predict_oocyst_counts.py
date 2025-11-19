@@ -154,7 +154,7 @@ def predict_cell_segmentation(img, slice_in_focus, predictor):
     boundary_values_arr = np.multiply(masks, image_boundary_arr)
     masks[np.isin(masks, np.unique(boundary_values_arr[boundary_values_arr != 0]))] = 0
 
-    num_unique_labels = np.unique(masks[masks != 0])
+    num_unique_labels = len(np.unique(masks[masks != 0]))
 
     filtered_mask = sitk.GetImageFromArray(masks.astype(np.uint16))
 
