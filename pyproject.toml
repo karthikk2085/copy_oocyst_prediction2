@@ -1,0 +1,37 @@
+[project]
+name = "copy_oocyst_prediction"
+version = "0.1.0"
+authors = [{ name = "Karthik Kantipudi", email = "karthik.kantipudi@nih.gov" }]
+description = "Tool to predict oocysts within microscopy images"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy<2",
+    "cellpose[gui]==4.0.4",
+    "pandas",
+    "SimpleITK",
+    "h5py",
+    "PyQt6==6.8.1",
+    "scikit-learn",
+    "skl2onnx",
+    "onnxruntime",
+]
+
+[project.scripts]
+predict_oocysts = "copy_oocyst_prediction.predict_oocyst_counts:main"
+
+[tool.uv]
+managed = false
+
+[build-system]
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["copy_oocyst_prediction*"]
