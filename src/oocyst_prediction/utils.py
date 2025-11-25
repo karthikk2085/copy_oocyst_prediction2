@@ -7,6 +7,7 @@ import pathlib
 from sklearn.metrics import (
     roc_curve,
 )
+import urllib.request
 
 
 def compute_label_features(
@@ -169,3 +170,16 @@ def positive_int(i):
         raise argparse.ArgumentTypeError(
             f"Invalid argument ({i}), expected value > 0 ."
         )
+
+
+def path_to_remote_file(local_file_path, remote_url):
+    """
+    Check if a local file path exists; if does not, download it from a remote URL.
+    Args:
+        local_file_path (str): Path to the local file
+        remote_url (str): URL of the remote file to download if local file doesn't exist
+    """
+    if not local_file_path or not pathlib.Path(local_file_path).is_file():
+        urllib.request.urlretrieve(remote_url, local_file_path)
+
+    return pathlib.Path(local_file_path)
