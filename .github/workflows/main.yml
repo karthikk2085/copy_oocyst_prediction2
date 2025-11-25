@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*.*.*"
   pull_request:
     branches:
       - main
-  # Enable manual running of workflow, so we can force execution
-  workflow_dispatch:
 
 jobs:
   # The specific pre-commit tests configurations are found in
@@ -16,13 +16,13 @@ jobs:
   preliminary_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
-    - name: Set up Python 3.12
+    - name: Set up Python 3.10
       uses: actions/setup-python@v6
       with:
-        python-version: 3.12
+        python-version: "3.10"
     - name: set PY (hash of installed Python version)
       run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
     - uses: actions/cache@v4
@@ -33,3 +33,44 @@ jobs:
       run: |
         pip install pre-commit
         pre-commit run --all-files
+
+  build_and_upload:
+    needs: preliminary_test
+    runs-on: ubuntu-latest
+    steps: 
+    - uses: actions/checkout@v6
+    - name: Install dependencies
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: Build and upload
+      run: |
+        uv build
+        ls -la dist
+        uv run --with dist/oocyst_prediction-*any.whl predict_oocysts -h
+    - name: Upload wheel
+      if: github.event_name == 'push'
+      uses: actions/upload-artifact@v5
+      with:
+        name: oocyst_prediction
+        path: dist/oocyst_prediction-*any.whl
+
+  github_release:
+      needs: build_and_upload
+      if: startsWith(github.ref, 'refs/tags/v')
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v6
+        id: download
+        with:
+          name: oocyst_prediction
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: dist/oocyst_prediction-*any.whl
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.OOCYST_PREDICTION_PAT }}
+          
