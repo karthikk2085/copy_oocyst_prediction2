@@ -6,37 +6,47 @@ For an overview of all parasite development stages in mosquitoes see J C Beier, 
 
 For an overview of current experimental models for study of malaria see N.V. Simwela and A.P. Waters, "Current status of experimental models for the study of malaria", 2022, doi:[10.1017/S0031182021002134](https://doi.org/10.1017/S0031182021002134) (has a nice figure illustrating the parasite life cycle in mosquito and mammalian host).
 
-Install [git-lfs](https://git-lfs.com/) to download .oonx weights for live and dead classification.
 
-## Installation
-
-```
-pip install -r requirements.txt
-```
-
-or minconda
+## Install oocyst prediction module using pip:
 
 ```
-conda env create -f environment.yml
+pip install https://github.com/karthikk2085/copy_oocyst_prediction/releases/download/v0.1.0/oocyst_prediction-0.1.0-py3-none-any.whl
 ```
+(or)
+## Install UV 
+
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+After installing UV close the current terminal and open a new terminal in your laptop.
 
 ## Script Listing
 
-### predict_oocyst_counts.py
+### Count the number of oocysts
 
 
 Count the number of oocysts in a 3D widefield microscopy image after [deconvolution](https://pubmed.ncbi.nlm.nih.gov/16080270/) where only a single 2D in-focus slice is analyzed. Input is expected to be in Imaris (.ims) format with cell segmentation done using [Cellpose](https://www.cellpose.org/).
 
 Estimated oocyst counts are written to a csv file. If the input was a csv file the counts will be added to that file. If the input was a directory the counts will be added to a uniquely named csv file in that directory. The original full resolution image and segmentation are written to a user specified output directory in NRRD format, enabling human oversight of the cell count results. Image and segmentation overlay are readily viewable using [ITK-SNAP](https://www.itksnap.org/).
 
-#### Usage:
+#### Usage (if oocyst prediction module is installed):
 
 ```
-python -m src.predict_oocyst_counts input.csv cell_diameter_in_physical_units output_dir
+predict_oocysts input.csv cell_diameter_in_physical_units output_dir
 ```
 or
 ```
-python -m src.predict_oocyst_counts input_dir cell_diameter_in_physical_units output_dir
+predict_oocysts input_dir cell_diameter_in_physical_units output_dir
+```
+
+#### Usage (if UV is installed):
+
+```
+uv run --with https://github.com/karthikk2085/copy_oocyst_prediction/releases/download/v0.1.0/oocyst_prediction-0.1.0-py3-none-any.whl predict_oocysts input.csv cell_diameter_in_physical_units output_dir
+```
+or
+```
+uv run --with https://github.com/karthikk2085/copy_oocyst_prediction/releases/download/v0.1.0/oocyst_prediction-0.1.0-py3-none-any.whl predict_oocysts input_dir cell_diameter_in_physical_units output_dir
 ```
 
 
@@ -52,14 +62,14 @@ python -m src.predict_oocyst_counts input_dir cell_diameter_in_physical_units ou
 * --flow_threshold: Maximum allowed error in Cellpose flows.
 * --cellprob_threshold: Probability threshold to consider a region a cell.
 * --tile_norm_blocksize: Block size for image normalization.
-* --live_dead_classifier: Option to classify live and dead oocysts. If given , the csv output generates "live oocyst count" and "dead oocyst count" instead of "automated oocyst count".
+* --live_dead_classifier: Option to classify live and dead oocysts. If given , the csv output generates "live oocyst count" and "dead oocyst count" instead of "automated oocyst count". If not provided, or the file not found locally, it will be downloaded from the remote_url.
 
 ### Classify live and dead oocysts using multiple models and select a ML model
 
 To train multiple ML models (RandomForest, SVM and GradientBoosting) to classify live and dead oocysts. use the below script
 
 ```
-python -m src.model_selection_classify_live_and_dead input.csv results
+model_selection input.csv results
 ```
 
 #### Arguments:
